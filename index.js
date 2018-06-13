@@ -1,3 +1,5 @@
+import 'u2f-ref-code';
+
 /**
  * Transform a given object to PascalCase keys ({key: "value"} => {Key: "value"}.
  *
@@ -6,19 +8,16 @@
  * @returns {{}}
  */
 function parseObjectToPascalCase(objectToParse = {}) {
-    return Object.keys(objectToParse)
-        .reduce((acc, key) => {
+    return Object.keys(objectToParse).reduce((acc, key) => {
         const newKey = key[0].toUpperCase() + key.slice(1);
-            acc[newKey] = objectToParse[key];
+        acc[newKey] = objectToParse[key];
         return acc;
     }, {});
 }
 
 /**
  * Transform a list of registered keys to a list compatible with U2F-API.
- *
- * @inner
- * @param {RegisteredKey[]} registeredKeys - the registered keys list.
+ * @param {Object[]} registeredKeys - the registered keys list.
  * @param {String} appId - the app id to associate with this key.
  * @returns {Object[]}
  */
@@ -32,7 +31,6 @@ function transformRegisteredKeys(registeredKeys = [], appId) {
 
 /**
  * Validates the request data. Ensures it is compatible with a U2F request.
- * @inner
  * @param {Object[]} registeredKeys
  * @param {String} challenge
  * @returns {Boolean}
@@ -43,7 +41,6 @@ function validateRequestData(registeredKeys, challenge) {
 
 /**
  * Validates the registration request data.
- * @inner
  * @param {Object[]} registeredKeys
  * @param {String} challenge
  * @param {String[]} versions
@@ -53,14 +50,11 @@ function validateRegistrationData(registeredKeys, challenge, versions) {
     return validateRequestData(registeredKeys, challenge) && Array.isArray(versions) && versions.length > 0;
 }
 
-
-
 /**
  * Call the given U2F method, and parse the response into a promise.
  *
  * The function must accept a single callback, which corresponds to the U2F API callback.
  *
- * @inner
  * @param {Function} func
  * @returns {Promise<any>}
  */
@@ -79,7 +73,7 @@ function callU2F(func) {
 /**
  * Sends a register request to `u2f-api`.
  *
- * @param {object} request - the request to send to `u2f-api`.
+ * @param {Object} request - the request to send to `u2f-api`.
  * @param {Object[]} request.RegisteredKeys - a list of registered keys. Usually given by the callback.
  * @param {String} request.RegisteredKeys[].Version
  * @param {String} request.RegisteredKeys[].KeyHandle
@@ -89,7 +83,7 @@ function callU2F(func) {
  * @param {int} [timeout = 10] - the timeout after which the request expires.
  * @returns {Promise}
  */
-export function register(
+export async function register(
     { RegisteredKeys: registeredKeys, Challenge: challenge, Versions: versions },
     appId,
     timeout = 10
@@ -103,21 +97,23 @@ export function register(
         appId: appId
     }));
 
-    return callU2F((cb) => u2f.register(appId, registerRequests, transformRegisteredKeys(registeredKeys, appId), cb, timeout));
+    return callU2F((cb) =>
+        u2f.register(appId, registerRequests, transformRegisteredKeys(registeredKeys, appId), cb, timeout)
+    );
 }
 
 /**
  * Sends a sign request to the `u2f-api`.
  *
  * @param {Object[]} registeredKeys - a list of registered keys.
- * @param {String} registeredKeys[].Version
- * @param {String} registeredKeys[].KeyHandle
- * @param {String[]} challenge - the challenge to solve.
+ * @param {String} registeredKeys[].Version - the version accepted by a key.
+ * @param {String} registeredKeys[].KeyHandle - the KeyHandle of a key.
+ * @param {String} challenge - the challenge to solve.
  * @param {String} appId - the app id of the current application.
  * @param {int} [timeout = 10] - the timeout after which the request will expire.
  * @returns {Promise}
  */
-export function sign({ RegisteredKeys: registeredKeys, Challenge: challenge }, appId, timeout = 10) {
+export async function sign({ RegisteredKeys: registeredKeys, Challenge: challenge }, appId, timeout = 10) {
     if (!validateRequestData(registeredKeys, challenge)) {
         throw new Error('request data is not valid');
     }

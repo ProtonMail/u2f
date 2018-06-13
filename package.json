@@ -2,13 +2,13 @@
   "name": "u2f",
   "version": "0.1.0",
   "description": "U2F Wrapper using Proton conventions",
-  "main": "u2f.js",
+  "main": "index.js",
   "eslintConfig": {
     "extends": "eslint-config-synacor"
   },
   "eslintIgnore": [
     "build/*",
-    "src/external/*"
+    "external/*"
   ],
   "lint-staged": {
     "*.js": [
@@ -16,17 +16,21 @@
       "git add"
     ]
   },
+  "dev": {
+    "u2f-api": "https://u2fdemo.appspot.com/js/u2f-api.js"
+  },
   "devDependencies": {
     "eslint": "^4.9.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.12.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-react": "^7.9.1"
+    "eslint-plugin-react": "^7.9.1",
+    "prettier": "^1.13.5"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src",
-    "pretty": "prettier --arrow-parens=always --single-quote --tab-width=4 --print-width=150 --prose-wrap=never --write u2f.js",
+    "pretty": "prettier --write index.js",
     "precommit": "lint-staged"
   },
   "keywords": [
@@ -37,5 +41,7 @@
   ],
   "author": "Thomas Hareau",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "u2f-ref-code": "git+https://github.com/ProtonMail/u2f-ref-code.git"
+  }
 }
